@@ -1,0 +1,452 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { PlusCircle, Menu, X, HeadphonesIcon, ArrowLeft, Send } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+
+type Message = {
+  id: number
+  text: string
+  sender: 'user' | 'agent' | 'human'
+  options?: TroubleshootingOption[]
+}
+
+type TroubleshootingOption = {
+  text: string
+  nextStep: number | 'resolve' | 'escalate'
+}
+
+type Chat = {
+  id: number
+  title: string
+  messages: Message[]
+  isEscalated: boolean
+}
+
+const troubleshootingSteps: { [key: number]: { text: string, options: TroubleshootingOption[] } } = {
+  1: {
+    text: "What issue are you experiencing with your SmartHome Hub?",
+    options: [
+      { text: "Hub won't connect to Wi-Fi", nextStep: 2 },
+      { text: "Hub is unresponsive", nextStep: 3 },
+      { text: "Devices not connecting to Hub", nextStep: 4 },
+    ]
+  },
+  2: {
+    text: "Let's troubleshoot the Wi-Fi connection. What's the status of your router?",
+    options: [
+      { text: "Router is on and working", nextStep: 5 },
+      { text: "Router is off or blinking", nextStep: 6 },
+      { text: "I'm not sure", nextStep: 7 },
+    ]
+  },
+  3: {
+    text: "For an unresponsive Hub, let's try a few things:",
+    options: [
+      { text: "I've tried restarting the Hub", nextStep: 8 },
+      { text: "I haven't tried restarting yet", nextStep: 9 },
+    ]
+  },
+  4: {
+    text: "If devices aren't connecting to the Hub, let's check a few things:",
+    options: [
+      { text: "I've updated the Hub firmware recently", nextStep: 10 },
+      { text: "I haven't updated the Hub firmware", nextStep: 11 },
+    ]
+  },
+  5: {
+    text: "Great, let's try reconnecting your Hub to Wi-Fi. Have you tried forgetting the network and reconnecting?",
+    options: [
+      { text: "Yes, I've tried that", nextStep: 12 },
+      { text: "No, I'll try that now", nextStep: 'resolve' },
+    ]
+  },
+  6: {
+    text: "Please try restarting your router. Unplug it for 30 seconds, then plug it back in. Did this resolve the issue?",
+    options: [
+      { text: "Yes, it's working now", nextStep: 'resolve' },
+      { text: "No, still not working", nextStep: 'escalate' },
+    ]
+  },
+  7: {
+    text: "No problem. Can you locate your router and check if the power light is on?",
+    options: [
+      { text: "Yes, the power light is on", nextStep: 5 },
+      { text: "No, the power light is off", nextStep: 6 },
+    ]
+  },
+  8: {
+    text: "If you've already restarted the Hub, let's check its power source. Is it properly plugged in?",
+    options: [
+      { text: "Yes, it's properly plugged in", nextStep: 'escalate' },
+      { text: "No, let me check that", nextStep: 'resolve' },
+    ]
+  },
+  9: {
+    text: "Please try restarting your SmartHome Hub. Unplug it, wait for 10 seconds, then plug it back in. Did this resolve the issue?",
+    options: [
+      { text: "Yes, it's working now", nextStep: 'resolve' },
+      { text: "No, still not working", nextStep: 8 },
+    ]
+  },
+  10: {
+    text: "If you've updated the Hub firmware and devices still aren't connecting, let's try resetting the Hub. Have you tried a factory reset?",
+    options: [
+      { text: "Yes, I've tried a factory reset", nextStep: 'escalate' },
+      { text: "No, I haven't tried that yet", nextStep: 'resolve' },
+    ]
+  },
+  11: {
+    text: "Let's update your Hub firmware. Go to the SmartHome app, navigate to Hub settings, and check for updates. After updating, are the devices connecting?",
+    options: [
+      { text: "Yes, devices are connecting now", nextStep: 'resolve' },
+      { text: "No, devices still won't connect", nextStep: 10 },
+    ]
+  },
+  12: {
+    text: "If you've already tried reconnecting, let's check if the Hub is within range of your Wi-Fi. Can you move the Hub closer to the router?",
+    options: [
+      { text: "Yes, I'll try that", nextStep: 'resolve' },
+      { text: "No, it's already close to the router", nextStep: 'escalate' },
+    ]
+  },
+}
+
+export default function TechnicalSupportAgent() {
+  const [chats, setChats] = useState<Chat[]>([
+    { id: 1, title: 'New Chat', messages: [{ id: 0, text: "Hello! I'm your SmartHome Hub support agent. How can I assist you today?", sender: 'agent' }], isEscalated: false }
+  ])
+  const [currentChatId, setCurrentChatId] = useState(1)
+  const [input, setInput] = useState('')
+  const [isThinking, setIsThinking] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [currentStep, setCurrentStep] = useState<number | null>(null)
+
+  const chatContentRef = useRef<HTMLDivElement>(null)
+
+  const currentChat = chats.find(chat => chat.id === currentChatId) || chats[0]
+
+  const handleSend = () => {
+    if (input.trim() === '') return
+
+    const updatedChats = chats.map(chat => {
+      if (chat.id === currentChatId) {
+        return {
+          ...chat,
+          messages: [...chat.messages, { id: chat.messages.length, text: input, sender: 'user' }]
+        }
+      }
+      return chat
+    })
+
+    setChats(updatedChats)
+    setInput('')
+    setIsThinking(true)
+  }
+
+  const startNewChat = () => {
+    const newChatId = chats.length + 1
+    setChats([...chats, { id: newChatId, title: `New Chat ${newChatId}`, messages: [{ id: 0, text: "Hello! I'm your SmartHome Hub support agent. How can I assist you today?", sender: 'agent' }], isEscalated: false }])
+    setCurrentChatId(newChatId)
+    setIsSidebarOpen(false)
+  }
+
+  const escalateToHuman = () => {
+    const updatedChats = chats.map(chat => {
+      if (chat.id === currentChatId) {
+        return {
+          ...chat,
+          isEscalated: true,
+          messages: [...chat.messages, { id: chat.messages.length, text: "Your chat has been escalated to human support. A representative will be with you shortly.", sender: 'human' }]
+        }
+      }
+      return chat
+    })
+    setChats(updatedChats)
+    setCurrentStep(null)
+  }
+
+  const handleOptionSelect = (nextStep: number | 'resolve' | 'escalate') => {
+    if (nextStep === 'resolve') {
+      const updatedChats = chats.map(chat => {
+        if (chat.id === currentChatId) {
+          return {
+            ...chat,
+            messages: [...chat.messages, { 
+              id: chat.messages.length, 
+              text: "Great! I'm glad we could resolve your issue. Is there anything else I can help you with?", 
+              sender: 'agent' 
+            }]
+          }
+        }
+        return chat
+      })
+      setChats(updatedChats)
+      setCurrentStep(null)
+    } else if (nextStep === 'escalate') {
+      escalateToHuman()
+    } else {
+      const nextStepData = troubleshootingSteps[nextStep]
+      const updatedChats = chats.map(chat => {
+        if (chat.id === currentChatId) {
+          return {
+            ...chat,
+            messages: [...chat.messages, { 
+              id: chat.messages.length, 
+              text: nextStepData.text, 
+              sender: 'agent',
+              options: nextStepData.options
+            }]
+          }
+        }
+        return chat
+      })
+      setChats(updatedChats)
+      setCurrentStep(nextStep)
+    }
+  }
+
+  useEffect(() => {
+    if (isThinking) {
+      const timer = setTimeout(() => {
+        const lastUserMessage = currentChat.messages[currentChat.messages.length - 1].text
+        const updatedChats = chats.map(chat => {
+          if (chat.id === currentChatId) {
+            return {
+              ...chat,
+              messages: [...chat.messages, { 
+                id: chat.messages.length, 
+                text: troubleshootingSteps[1].text, 
+                sender: 'agent',
+                options: troubleshootingSteps[1].options
+              }]
+            }
+          }
+          return chat
+        })
+
+        setChats(updatedChats)
+        setIsThinking(false)
+        setCurrentStep(1)
+      }, 1000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [isThinking, chats, currentChatId, currentChat.messages])
+
+  useEffect(() => {
+    if (chatContentRef.current) {
+      chatContentRef.current.scrollTop = chatContentRef.current.scrollHeight
+    }
+  }, [currentChat.messages])
+
+  return (
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ x: -300 }}
+            animate={{ x: 0 }}
+            exit={{ x: -300 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed inset-y-0 left-0 z-50 w-64 bg-secondary p-4 shadow-lg md:relative md:translate-x-0"
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-2 md:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <X className="h-6 w-6" />
+              <span className="sr-only">Close sidebar</span>
+            </Button>
+            <h2 className="text-xl font-bold mb-4">Past Chats</h2>
+            <ScrollArea className="h-[calc(100vh-8rem)]">
+              {chats.map((chat) => (
+                <Button
+                  key={chat.id}
+                  variant={chat.id === currentChatId ? "secondary" : "ghost"}
+                  className="w-full justify-start mb-2"
+                  onClick={() => {
+                    setCurrentChatId(chat.id)
+                    setIsSidebarOpen(false)
+                  }}
+                >
+                  {chat.title}
+                  {chat.isEscalated && (
+                    <HeadphonesIcon className="ml-2 h-4 w-4" />
+                  )}
+                </Button>
+              ))}
+            </ScrollArea>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        <header className="bg-primary p-4 text-primary-foreground flex justify-between items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            <Menu className="h-6 w-6" />
+            <span className="sr-only">Toggle sidebar</span>
+          </Button>
+          <h1 className="text-xl font-bold">SmartHome Hub Support</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={startNewChat}
+          >
+            <PlusCircle className="h-6 w-6" />
+            <span className="sr-only">Start new chat</span>
+          </Button>
+        </header>
+
+        <div className="flex-grow relative">
+          <ScrollArea className="h-full p-4" ref={chatContentRef}>
+            {currentChat.isEscalated && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 100 }}
+              >
+                <Alert className="mb-4">
+                  <HeadphonesIcon className="h-4 w-4" />
+                  <AlertTitle>Human Support Active</AlertTitle>
+                  <AlertDescription>
+                    You are now connected to a human support representative.
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
+            )}
+            <AnimatePresence initial={false}>
+              {currentChat.messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                  transition={{ type: "spring", stiffness: 100 }}
+                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+                >
+                  <div className={`flex items-start ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback>{message.sender === 'user' ? 'U' : message.sender === 'human' ? 'H' : 'A'}</AvatarFallback>
+                    </Avatar>
+                    <motion.div 
+                      initial={{ scale: 0.8 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200 }}
+                      className={`mx-2 p-3 rounded-lg ${
+                        message.sender === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : message.sender === 'human'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-secondary'
+                      }`}
+                    >
+                      {message.text}
+                      {message.options && (
+                        <RadioGroup className="mt-2 space-y-1">
+                          {message.options.map((option, index) => (
+                            <div key={index} className="flex items-center space-x-2">
+                              <RadioGroupItem 
+                                id={`option-${message.id}-${index}`} 
+                                value={option.text}
+                                onClick={() => handleOptionSelect(option.nextStep)}
+                              />
+                              <Label htmlFor={`option-${message.id}-${index}`}>{option.text}</Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      )}
+                    </motion.div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            <AnimatePresence>
+              {isThinking && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                  transition={{ type: "spring", stiffness: 100 }}
+                  className="flex justify-start mb-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback>A</AvatarFallback>
+                    </Avatar>
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ repeat: Infinity, duration: 1 }}
+                      className="bg-secondary p-3 rounded-lg"
+                    >
+                      Thinking...
+                    </motion.div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </ScrollArea>
+
+          {/* Escalate to Human Support Button */}
+          {!currentChat.isEscalated && currentStep === null && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="absolute bottom-4 right-4 p-2 bg-primary text-primary-foreground rounded-full shadow-lg"
+                    onClick={escalateToHuman}
+                  >
+                    <HeadphonesIcon className="h-6 w-6" />
+                    <span className="sr-only">Escalate to Human Support</span>
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Escalate to Human Support</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+
+        <div className="p-4 border-t">
+          <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex space-x-2">
+            <Input
+              type="text"
+              placeholder="Type your message..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="flex-grow"
+              disabled={isThinking || currentStep !== null}
+            />
+            <Button 
+              type="submit"
+              disabled={isThinking || currentStep !== null}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Send
+            </Button>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}

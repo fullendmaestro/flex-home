@@ -1,0 +1,1010 @@
+// /signup page
+'use client'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Home, User, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import Link from 'next/link'
+
+export default function SignupPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [accountType, setAccountType] = useState('personal')
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('Signup submitted:', { email, password, confirmPassword, firstName, lastName, accountType })
+    // Here you would typically handle the signup logic
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-4xl"
+      >
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold">Welcome to Flex Home</CardTitle>
+            <CardDescription>
+              Create an account to start managing your smart home
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="personal" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="personal">Personal Account</TabsTrigger>
+                <TabsTrigger value="business">Business Account</TabsTrigger>
+              </TabsList>
+              <TabsContent value="personal">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="firstName"
+                          placeholder="John"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          className="pl-8"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="lastName"
+                          placeholder="Doe"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          className="pl-8"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="john.doe@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-8"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-8 pr-10"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">
+                          {showPassword ? "Hide password" : "Show password"}
+                        </span>
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="pl-8"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="terms" required />
+                    <Label htmlFor="terms" className="text-sm">
+                      I agree to the{' '}
+                      <Link href="/terms" className="underline">
+                        Terms of Service
+                      </Link>{' '}
+                      and{' '}
+                      <Link href="/privacy" className="underline">
+                        Privacy Policy
+                      </Link>
+                    </Label>
+                  </div>
+                  <Button className="w-full" type="submit">
+                    Create Personal Account
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+          <CardFooter className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-sm text-muted-foreground">
+              Already have an account?{' '}
+              <Link href="/login" className="underline">
+                Login
+              </Link>
+            </div>
+            <div className="text-sm">
+              <Link href="/help" className="underline">
+                Need help?
+              </Link>
+            </div>
+          </CardFooter>
+        </Card>
+      </motion.div>
+    </div>
+  )
+}
+
+
+
+// /login page
+'use client'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from 'next/link'
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('Signup submitted:', { email, password, confirmPassword })
+    // Here you would typically handle the signup logic
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+            <CardDescription>
+              Enter your email below to login your account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit}>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <Button className="w-full mt-6" type="submit">
+                Login
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-sm text-muted-foreground">
+              Don't have an account?{' '}
+              <Link href="/login" className="underline">
+                Signup
+              </Link>
+            </div>
+            <div className="text-sm">
+              <Link href="/help" className="underline">
+                Need help?
+              </Link>
+            </div>
+          </CardFooter>
+        </Card>
+      </motion.div>
+    </div>
+  )
+}
+
+
+
+// /chat page
+
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { PlusCircle, Menu, X, Headphones, Send, MessageSquare } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+type Message = {
+  id: number
+  text: string
+  sender: 'user' | 'agent' | 'human'
+  options?: TroubleshootingOption[]
+}
+
+type TroubleshootingOption = {
+  text: string
+  nextStep: number | 'resolve' | 'escalate'
+}
+
+type Chat = {
+  id: number
+  title: string
+  messages: Message[]
+  isEscalated: boolean
+}
+
+const troubleshootingSteps: { [key: number]: { text: string, options: TroubleshootingOption[] } } = {
+  1: {
+    text: "What issue are you experiencing with your SmartHome Hub?",
+    options: [
+      { text: "Hub won't connect to Wi-Fi", nextStep: 2 },
+      { text: "Hub is unresponsive", nextStep: 3 },
+      { text: "Devices not connecting to Hub", nextStep: 4 },
+    ]
+  },
+  2: {
+    text: "Let's troubleshoot the Wi-Fi connection. Is your router powered on and functioning?",
+    options: [
+      { text: "Yes, the router is working", nextStep: 5 },
+      { text: "No, there seems to be an issue with the router", nextStep: 6 },
+      { text: "I'm not sure", nextStep: 7 },
+    ]
+  },
+  3: {
+    text: "For an unresponsive hub, let's try a few things. Have you tried restarting the hub?",
+    options: [
+      { text: "Yes, I've tried restarting", nextStep: 8 },
+      { text: "No, I haven't tried that yet", nextStep: 9 },
+    ]
+  },
+  4: {
+    text: "If devices aren't connecting to the hub, let's check a few things. Is the hub's status light on and stable?",
+    options: [
+      { text: "Yes, the status light is on and stable", nextStep: 10 },
+      { text: "No, the status light is off or blinking", nextStep: 11 },
+    ]
+  },
+  5: {
+    text: "Great. Let's try reconnecting your hub to Wi-Fi. Have you tried forgetting the network and reconnecting?",
+    options: [
+      { text: "Yes, I've tried that", nextStep: 12 },
+      { text: "No, I'll try that now", nextStep: 'resolve' },
+    ]
+  },
+  6: {
+    text: "I see. Can you try restarting your router? Unplug it for 30 seconds, then plug it back in.",
+    options: [
+      { text: "Okay, I'll try that", nextStep: 'resolve' },
+      { text: "I've already tried that, it didn't help", nextStep: 'escalate' },
+    ]
+  },
+  7: {
+    text: "No problem. Can you locate your router and check if the power light is on?",
+    options: [
+      { text: "Yes, the power light is on", nextStep: 5 },
+      { text: "No, the power light is off", nextStep: 6 },
+    ]
+  },
+  8: {
+    text: "If you've already restarted the hub, let's check the power source. Is it properly plugged in and the power outlet working?",
+    options: [
+      { text: "Yes, it's properly plugged in and the outlet works", nextStep: 'escalate' },
+      { text: "Let me double-check that", nextStep: 'resolve' },
+    ]
+  },
+  9: {
+    text: "Okay, let's try restarting the hub. Unplug it, wait for 10 seconds, then plug it back in. Let me know if that helps.",
+    options: [
+      { text: "Okay, I'll try that now", nextStep: 'resolve' },
+      { text: "That didn't solve the issue", nextStep: 8 },
+    ]
+  },
+  10: {
+    text: "Good. Let's try removing a device from the hub and re-adding it. Can you try that with one of the devices?",
+    options: [
+      { text: "Yes, I'll try that", nextStep: 'resolve' },
+      { text: "I've already tried that, it didn't work", nextStep: 'escalate' },
+    ]
+  },
+  11: {
+    text: "I see. First, let's try restarting the hub. Unplug it, wait for 10 seconds, then plug it back in. Did that help?",
+    options: [
+      { text: "Yes, the status light is now stable", nextStep: 10 },
+      { text: "No, the status light is still off or blinking", nextStep: 'escalate' },
+    ]
+  },
+  12: {
+    text: "If reconnecting didn't work, let's try resetting the hub to factory settings. Are you comfortable doing this? It will erase all settings.",
+    options: [
+      { text: "Yes, I'll try resetting the hub", nextStep: 'resolve' },
+      { text: "I'd rather not reset the hub", nextStep: 'escalate' },
+    ]
+  },
+}
+
+export default function TechnicalSupportAgentChatPage() {
+  const [chats, setChats] = useState<Chat[]>([])
+  const [currentChatId, setCurrentChatId] = useState<number | null>(null)
+  const [input, setInput] = useState('')
+  const [isThinking, setIsThinking] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [currentStep, setCurrentStep] = useState<number | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const chatContentRef = useRef<HTMLDivElement>(null)
+  const lastMessageRef = useRef<HTMLDivElement>(null)
+
+  const currentChat = chats.find(chat => chat.id === currentChatId)
+
+  const handleSend = () => {
+    if (input.trim() === '' || isThinking || !currentChatId) return
+
+    const updatedChats = chats.map(chat => {
+      if (chat.id === currentChatId) {
+        return {
+          ...chat,
+          messages: [...chat.messages, { id: chat.messages.length, text: input, sender: 'user' }]
+        }
+      }
+      return chat
+    })
+
+    setChats(updatedChats)
+    setInput('')
+    setIsThinking(true)
+    setError(null)
+
+    try {
+      // Generate bot response
+      setTimeout(() => {
+        let botResponse: Message
+
+        if (currentStep !== null && troubleshootingSteps[currentStep]) {
+          const stepData = troubleshootingSteps[currentStep]
+          botResponse = {
+            id: currentChat!.messages.length + 1,
+            text: stepData.text,
+            sender: 'agent',
+            options: stepData.options
+          }
+          setCurrentStep(currentStep + 1)
+        } else {
+          botResponse = {
+            id: currentChat!.messages.length + 1,
+            text: "I understand you're having an issue. Could you please provide more details about the problem you're experiencing?",
+            sender: 'agent',
+            options: troubleshootingSteps[1].options
+          }
+          setCurrentStep(1)
+        }
+
+        setChats(prevChats => prevChats.map(chat => 
+          chat.id === currentChatId 
+            ? { ...chat, messages: [...chat.messages, botResponse] }
+            : chat
+        ))
+        setIsThinking(false)
+      }, 1000)
+    } catch (err) {
+      setError("An error occurred while processing your request. Please try again.")
+      setIsThinking(false)
+    }
+  }
+
+  const startNewChat = () => {
+    const newChatId = chats.length + 1
+    const initialMessage = { 
+      id: 0, 
+      text: "Hello! I'm your SmartHome Hub support agent. How can I assist you today?", 
+      sender: 'agent', 
+      options: troubleshootingSteps[1].options 
+    }
+    
+    setChats(prevChats => [...prevChats, { 
+      id: newChatId, 
+      title: `New Chat ${newChatId}`, 
+      messages: [initialMessage], 
+      isEscalated: false
+    }])
+    setCurrentChatId(newChatId)
+    setIsSidebarOpen(false)
+    setCurrentStep(1)
+    setError(null)
+  }
+
+  const escalateToHuman = () => {
+    if (!currentChatId) return
+
+    const updatedChats = chats.map(chat => {
+      if (chat.id === currentChatId) {
+        return {
+          ...chat,
+          isEscalated: true,
+          messages: [...chat.messages, { id: chat.messages.length, text: "Your chat has been escalated to human support. A representative will be with you shortly.", sender: 'human' }]
+        }
+      }
+      return chat
+    })
+    setChats(updatedChats)
+    setCurrentStep(null)
+  }
+
+  const handleOptionSelect = (nextStep: number | 'resolve' | 'escalate') => {
+    if (!currentChatId) return
+
+    if (nextStep === 'resolve') {
+      const updatedChats = chats.map(chat => {
+        if (chat.id === currentChatId) {
+          return {
+            ...chat,
+            messages: [...chat.messages, { 
+              id: chat.messages.length, 
+              text: "Great! I'm glad we could resolve your issue. Is there anything else I can help you with?", 
+              sender: 'agent',
+              options: troubleshootingSteps[1].options
+            }]
+          }
+        }
+        return chat
+      })
+      setChats(updatedChats)
+      setCurrentStep(1)
+    } else if (nextStep === 'escalate') {
+      escalateToHuman()
+    } else {
+      const nextStepData = troubleshootingSteps[nextStep]
+      const updatedChats = chats.map(chat => {
+        if (chat.id === currentChatId) {
+          return {
+            ...chat,
+            messages: [...chat.messages, { 
+              id: chat.messages.length, 
+              text: nextStepData.text, 
+              sender: 'agent',
+              options: nextStepData.options
+            }]
+          }
+        }
+        return chat
+      })
+      setChats(updatedChats)
+      setCurrentStep(nextStep)
+    }
+  }
+
+  useEffect(() => {
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [currentChat?.messages])
+
+  return (
+    <div className="flex h-screen bg-background">
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ x: -300 }}
+            animate={{ x: 0 }}
+            exit={{ x: -300 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed inset-y-0 left-0 z-50 w-64 bg-secondary p-4 shadow-lg md:relative md:translate-x-0"
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-2 md:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <X className="h-6 w-6" />
+              <span className="sr-only">Close sidebar</span>
+            </Button>
+            <h2 className="text-xl font-bold mb-4">Past Chats</h2>
+            <ScrollArea className="h-[calc(100vh-8rem)]">
+              {chats.map((chat) => (
+                <Button
+                  key={chat.id}
+                  variant={chat.id === currentChatId ? "secondary" : "ghost"}
+                  className="w-full justify-start mb-2"
+                  onClick={() => {
+                    setCurrentChatId(chat.id)
+                    setIsSidebarOpen(false)
+                    setCurrentStep(1)
+                    setError(null)
+                  }}
+                >
+                  {chat.title}
+                  {chat.isEscalated && (
+                    <Headphones className="ml-2 h-4 w-4" />
+                  )}
+                </Button>
+              ))}
+            </ScrollArea>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex-1 flex flex-col">
+        <header className="bg-primary p-4 text-primary-foreground flex justify-between items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            <Menu className="h-6 w-6" />
+            <span className="sr-only">Toggle sidebar</span>
+          </Button>
+          <h1 className="text-xl font-bold">SmartHome Hub Support</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={startNewChat}
+          >
+            <PlusCircle className="h-6 w-6" />
+            <span className="sr-only">Start new chat</span>
+          </Button>
+        </header>
+
+        <div className="flex-grow relative overflow-hidden">
+          {currentChatId === null ? (
+            <div className="h-full flex items-center justify-center">
+              <Card className="w-96">
+                <CardHeader>
+                  <CardTitle>Welcome to SmartHome Hub Support</CardTitle>
+                  <CardDescription>Start a new chat to get assistance with your SmartHome Hub</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={startNewChat} className="w-full">
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Start New Chat
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <ScrollArea className="h-full p-4" ref={chatContentRef}>
+              {currentChat?.isEscalated && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 100 }}
+                >
+                  <Alert className="mb-4">
+                    <Headphones className="h-4 w-4" />
+                    <AlertTitle>Human Support Active</AlertTitle>
+                    <AlertDescription>
+                      You are now connected to a human support representative.
+                    </AlertDescription>
+                  </Alert>
+                </motion.div>
+              )}
+              <AnimatePresence initial={false}>
+                {currentChat?.messages.map((message, index) => (
+                  <motion.div
+                    key={message.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                    transition={{ type: "spring", stiffness: 100 }}
+                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+                    ref={index === currentChat.messages.length - 1 ? lastMessageRef : null}
+                  >
+                    <div className={`flex items-start ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback>{message.sender === 'user' ? 'U' : message.sender === 'human' ? 'H' : 'A'}</AvatarFallback>
+                      </Avatar>
+                      <motion.div 
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200 }}
+                        className={`mx-2 p-3 rounded-lg ${
+                          message.sender === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : message.sender === 'human'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-secondary'
+                        }`}
+                      >
+                        {message.text}
+                        {message.options && (
+                          <RadioGroup className="mt-2 space-y-1">
+                            {message.options.map((option, index) => (
+                              <div key={index} className="flex items-center space-x-2">
+                                <RadioGroupItem 
+                                  id={`option-${message.id}-${index}`} 
+                                  value={option.text}
+                                  onClick={() => handleOptionSelect(option.nextStep)}
+                                />
+                                <Label htmlFor={`option-${message.id}-${index}`}>{option.text}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        )}
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              <AnimatePresence>
+                {isThinking && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                    transition={{ type: "spring", stiffness: 100 }}
+                    className="flex justify-start mb-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback>A</AvatarFallback>
+                      </Avatar>
+                      <motion.div
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                        className="bg-secondary p-3 rounded-lg"
+                      >
+                        Thinking...
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </ScrollArea>
+          )}
+
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Escalate to Human Support Button */}
+          {currentChatId !== null && !currentChat?.isEscalated && (
+            <div className="fixed bottom-20 right-4 z-50">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="p-2 bg-primary text-primary-foreground rounded-full shadow-lg"
+                      onClick={escalateToHuman}
+                    >
+                      <Headphones className="h-6 w-6" />
+                      <span className="sr-only">Escalate to Human Support</span>
+                    </motion.button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Escalate to Human Support</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          )}
+        </div>
+
+        {currentChatId !== null && (
+          <div className="p-4 border-t">
+            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex space-x-2">
+              <Input
+                type="text"
+                placeholder="Type your message..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                className="flex-grow"
+                disabled={isThinking || currentChat?.isEscalated}
+              />
+              <Button 
+                type="submit"
+                disabled={isThinking || currentChat?.isEscalated}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Send
+              </Button>
+            </form>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+
+// /agentsdashboard page
+'use client'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Search, Bell, MessageCircle, CheckCircle, XCircle, Clock } from 'lucide-react'
+
+type EscalatedIssue = {
+  id: string
+  user: string
+  issue: string
+  timestamp: string
+  status: 'pending' | 'in_progress' | 'resolved'
+  responded: boolean
+}
+
+const mockEscalatedIssues: EscalatedIssue[] = [
+  { id: '1', user: 'John Doe', issue: 'SmartHome Hub Wi-Fi Connection', timestamp: '2023-06-10 14:30', status: 'pending', responded: false },
+  { id: '2', user: 'Jane Smith', issue: 'Device Pairing Failure', timestamp: '2023-06-10 15:45', status: 'in_progress', responded: true },
+  { id: '3', user: 'Bob Johnson', issue: 'Firmware Update Error', timestamp: '2023-06-10 16:20', status: 'resolved', responded: true },
+  { id: '4', user: 'Alice Brown', issue: 'Smart Lock Malfunction', timestamp: '2023-06-10 17:10', status: 'pending', responded: false },
+  { id: '5', user: 'Charlie Wilson', issue: 'Thermostat Not Responding', timestamp: '2023-06-10 18:05', status: 'in_progress', responded: true },
+]
+
+export default function AgentDashboard() {
+  const [issues, setIssues] = useState<EscalatedIssue[]>(mockEscalatedIssues)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredIssues = issues.filter(issue => 
+    issue.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    issue.issue.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const pendingIssues = filteredIssues.filter(issue => issue.status === 'pending')
+  const inProgressIssues = filteredIssues.filter(issue => issue.status === 'in_progress')
+  const resolvedIssues = filteredIssues.filter(issue => issue.status === 'resolved')
+
+  const handleStatusChange = (id: string, newStatus: 'pending' | 'in_progress' | 'resolved') => {
+    setIssues(issues.map(issue => 
+      issue.id === id ? { ...issue, status: newStatus } : issue
+    ))
+  }
+
+  const handleResponseToggle = (id: string) => {
+    setIssues(issues.map(issue => 
+      issue.id === id ? { ...issue, responded: !issue.responded } : issue
+    ))
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="bg-primary text-primary-foreground p-4">
+        <div className="container mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Agent Dashboard</h1>
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="icon">
+              <Bell className="h-5 w-5" />
+            </Button>
+            <Avatar>
+              <AvatarFallback>AG</AvatarFallback>
+            </Avatar>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto py-8">
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Escalated Issues Overview</CardTitle>
+            <CardDescription>Manage and respond to customer issues that require human assistance.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex space-x-2">
+                <Badge variant="secondary">{pendingIssues.length} Pending</Badge>
+                <Badge variant="secondary">{inProgressIssues.length} In Progress</Badge>
+                <Badge variant="secondary">{resolvedIssues.length} Resolved</Badge>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search issues..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Tabs defaultValue="all">
+          <TabsList>
+            <TabsTrigger value="all">All Issues</TabsTrigger>
+            <TabsTrigger value="pending">Pending</TabsTrigger>
+            <TabsTrigger value="in_progress">In Progress</TabsTrigger>
+            <TabsTrigger value="resolved">Resolved</TabsTrigger>
+          </TabsList>
+          <TabsContent value="all">
+            <IssueTable issues={filteredIssues} onStatusChange={handleStatusChange} onResponseToggle={handleResponseToggle} />
+          </TabsContent>
+          <TabsContent value="pending">
+            <IssueTable issues={pendingIssues} onStatusChange={handleStatusChange} onResponseToggle={handleResponseToggle} />
+          </TabsContent>
+          <TabsContent value="in_progress">
+            <IssueTable issues={inProgressIssues} onStatusChange={handleStatusChange} onResponseToggle={handleResponseToggle} />
+          </TabsContent>
+          <TabsContent value="resolved">
+            <IssueTable issues={resolvedIssues} onStatusChange={handleStatusChange} onResponseToggle={handleResponseToggle} />
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  )
+}
+
+function IssueTable({ 
+  issues, 
+  onStatusChange, 
+  onResponseToggle 
+}: { 
+  issues: EscalatedIssue[], 
+  onStatusChange: (id: string, status: 'pending' | 'in_progress' | 'resolved') => void,
+  onResponseToggle: (id: string) => void
+}) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>User</TableHead>
+          <TableHead>Issue</TableHead>
+          <TableHead>Timestamp</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Responded</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {issues.map((issue) => (
+          <TableRow key={issue.id}>
+            <TableCell>{issue.user}</TableCell>
+            <TableCell>{issue.issue}</TableCell>
+            <TableCell>{issue.timestamp}</TableCell>
+            <TableCell>
+              <Badge 
+                variant={issue.status === 'resolved' ? 'default' : 'outline'}
+                className={`
+                  ${issue.status === 'pending' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : ''}
+                  ${issue.status === 'in_progress' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' : ''}
+                  ${issue.status === 'resolved' ? 'bg-green-100 text-green-800 hover:bg-green-200' : ''}
+                `}
+              >
+                {issue.status === 'pending' && <Clock className="w-4 h-4 mr-1" />}
+                {issue.status === 'in_progress' && <MessageCircle className="w-4 h-4 mr-1" />}
+                {issue.status === 'resolved' && <CheckCircle className="w-4 h-4 mr-1" />}
+                {issue.status.replace('_', ' ')}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <motion.div
+                initial={{ scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onResponseToggle(issue.id)}
+                >
+                  {issue.responded ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-red-500" />
+                  )}
+                </Button>
+              </motion.div>
+            </TableCell>
+            <TableCell>
+              <div className="flex space-x-2">
+                <Button 
+                  size="sm" 
+                  variant={issue.status === 'pending' ? 'default' : 'outline'}
+                  onClick={() => onStatusChange(issue.id, 'pending')}
+                >
+                  Pending
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant={issue.status === 'in_progress' ? 'default' : 'outline'}
+                  onClick={() => onStatusChange(issue.id, 'in_progress')}
+                >
+                  In Progress
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant={issue.status === 'resolved' ? 'default' : 'outline'}
+                  onClick={() => onStatusChange(issue.id, 'resolved')}
+                >
+                  Resolved
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
+}

@@ -1,0 +1,167 @@
+'use client'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Home, Smartphone, Shield, Zap, Thermometer, Video, Lock, Wifi } from 'lucide-react'
+
+const services = [
+  {
+    icon: Home,
+    title: "Smart Home Integration",
+    description: "Seamlessly connect and control all your smart devices from a single interface.",
+    details: "Our Smart Home Integration service brings together all your IoT devices under one unified system. Control lights, thermostats, security cameras, and more with ease. We ensure compatibility across major brands and provide a user-friendly dashboard for effortless management."
+  },
+  {
+    icon: Smartphone,
+    title: "Mobile Control",
+    description: "Control your entire home from anywhere with our intuitive mobile app.",
+    details: "With our Mobile Control service, your home is always at your fingertips. Our app provides real-time updates and control over all connected devices. Set schedules, receive notifications, and make adjustments on-the-go. Available for both iOS and Android devices."
+  },
+  {
+    icon: Shield,
+    title: "Enhanced Security",
+    description: "Protect your home with our advanced security features and monitoring.",
+    details: "Our Enhanced Security service offers peace of mind with 24/7 monitoring, smart locks, motion sensors, and video surveillance. Receive instant alerts for any unusual activity and control access to your home remotely. We also provide secure data encryption to protect your privacy."
+  },
+  {
+    icon: Zap,
+    title: "Energy Efficiency",
+    description: "Optimize your energy usage and reduce bills with smart power management.",
+    details: "Our Energy Efficiency service helps you save money and reduce your carbon footprint. We install smart meters, energy-efficient appliances, and provide detailed analytics on your power consumption. Set up automated rules to optimize energy use based on your lifestyle and preferences."
+  },
+  {
+    icon: Thermometer,
+    title: "Climate Control",
+    description: "Maintain the perfect temperature in every room with smart climate management.",
+    details: "Experience ultimate comfort with our Climate Control service. We install smart thermostats that learn your preferences and adjust automatically. Create zones for different areas of your home, set schedules, and control temperature remotely for maximum efficiency and comfort."
+  },
+  {
+    icon: Video,
+    title: "Entertainment Systems",
+    description: "Transform your home into a state-of-the-art entertainment hub.",
+    details: "Our Entertainment Systems service brings the cinema experience to your living room. We install and configure smart TVs, surround sound systems, and streaming devices. Control your entire media setup with voice commands or your smartphone for a truly immersive experience."
+  },
+  {
+    icon: Lock,
+    title: "Access Control",
+    description: "Manage entry to your home with smart locks and personalized access codes.",
+    details: "With our Access Control service, you can say goodbye to traditional keys. We install smart locks that can be controlled via your smartphone. Create temporary access codes for guests, receive notifications when someone enters or exits, and lock or unlock your doors remotely."
+  },
+  {
+    icon: Wifi,
+    title: "Network Optimization",
+    description: "Ensure fast and reliable connectivity throughout your entire home.",
+    details: "Our Network Optimization service guarantees seamless connectivity for all your smart devices. We analyze your home's layout to eliminate dead zones, set up secure Wi-Fi networks, and optimize bandwidth allocation. Enjoy uninterrupted streaming, gaming, and smart device operation throughout your home."
+  }
+]
+
+export default function ServicesPage() {
+  const [activeTab, setActiveTab] = useState("all")
+
+  const filteredServices = activeTab === "all" ? services : services.slice(0, 4)
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="bg-primary text-primary-foreground">
+        <div className="container mx-auto px-4 py-6 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Flex Home</h1>
+          <nav>
+            <ul className="flex space-x-4">
+              <li><a href="/" className="hover:underline">Home</a></li>
+              <li><a href="#" className="hover:underline font-semibold">Services</a></li>
+              <li><a href="#" className="hover:underline">Pricing</a></li>
+              <li><a href="#" className="hover:underline">Contact</a></li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-4xl font-bold mb-8 text-center">Our Services</h2>
+          <p className="text-xl mb-12 text-center max-w-2xl mx-auto">
+            Discover how Flex Home can transform your living space into a smart, efficient, and secure environment.
+          </p>
+        </motion.div>
+
+        <Tabs defaultValue="all" className="mb-12">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="all" onClick={() => setActiveTab("all")}>All Services</TabsTrigger>
+            <TabsTrigger value="popular" onClick={() => setActiveTab("popular")}>Popular Services</TabsTrigger>
+          </TabsList>
+          <TabsContent value="all">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredServices.map((service, index) => (
+                <motion.div
+                  key={service.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Card className="h-full flex flex-col">
+                    <CardHeader>
+                      <service.icon className="w-12 h-12 mb-4 text-primary" />
+                      <CardTitle>{service.title}</CardTitle>
+                      <CardDescription>{service.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                      <p className="text-sm">{service.details}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="popular">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredServices.map((service, index) => (
+                <motion.div
+                  key={service.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Card className="h-full flex flex-col">
+                    <CardHeader>
+                      <service.icon className="w-12 h-12 mb-4 text-primary" />
+                      <CardTitle>{service.title}</CardTitle>
+                      <CardDescription>{service.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                      <p className="text-sm">{service.details}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="text-center"
+        >
+          <h3 className="text-2xl font-bold mb-4">Ready to transform your home?</h3>
+          <Button size="lg" onClick={() => console.log("Contact us clicked")}>
+            Contact Us
+          </Button>
+        </motion.div>
+      </main>
+
+      <footer className="bg-primary text-primary-foreground py-8 mt-12">
+        <div className="container mx-auto px-4 text-center">
+          <p>&copy; 2023 Flex Home. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
+  )
+}
