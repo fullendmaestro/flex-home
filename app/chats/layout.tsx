@@ -11,7 +11,6 @@ type ChatLayoutProps = {
 };
 
 const ChatLayout: React.FC<ChatLayoutProps> = ({ children }) => {
-  const [chats, setChats] = useState<Chat[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (

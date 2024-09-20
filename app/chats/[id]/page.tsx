@@ -1,125 +1,48 @@
-"use client";
-
-import { useState, useRef, useEffect } from "react";
-import ChatLayout from "../components/ChatLayout";
-import ChatMessages from "../components/ChatMessages";
-import ChatInput from "../components/ChatInput";
-import EscalateButton from "../components/EscalateButton";
-import { useParams } from "next/navigation";
+import { fetchChatById, getLoggedInUser } from "@/lib/actions/user.actions";
+import ChatIdPageCM from "./ChatIdPageCM";
+import Link from "next/link";
 import {
-  escalateChat,
-  fetchChatById,
-  getLoggedInUser,
-  sendMessage,
-} from "@/lib/actions/user.actions";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { LogIn } from "lucide-react";
+import { useEffect } from "react";
 
-const ChatIdPage = async () => {
-  const loggedIn = await getLoggedInUser();
-  if (!loggedIn) return;
-  const param = useParams<{ id: string }>();
-  const id = param.id;
-  console.log(id);
+const ChatIdPage = async ({ params }: { params: { id: string } }) => {
+  const { id } = params;
+  let loggedIn = await getLoggedInUser();
 
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isThinking, setIsThinking] = useState(false);
-  const [isEscalated, setIsEscalated] = useState(false);
-  const lastMessageRef = useRef<HTMLDivElement | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadChat = async () => {
-      try {
-        const chat = await fetchChatById(id);
-        if (chat) {
-          setMessages(chat.messages);
-          setIsEscalated(chat.isEscalated);
-        }
-        console.log(messages);
-      } catch (error) {
-        console.error("Failed to fetch chat:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadChat();
-  }, [id]);
-
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    setIsThinking(true);
-
-    try {
-      const newMessage = {
-        message: input,
-        senderId: "user", // This can be the current logged-in user's ID
-      };
-      const updatedChat = await sendMessage(
-        id,
-        newMessage.message,
-        newMessage.senderId
-      );
-
-      if (updatedChat) {
-        setMessages(updatedChat.messages);
-        setInput("");
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-    } finally {
-      setIsThinking(false);
-    }
-  };
-
-  const handleOptionSelect = (nextStep: number | "resolve" | "escalate") => {
-    // Handle option selection, if needed.
-  };
-
-  const handleEscalate = async () => {
-    try {
-      const updatedChat = await escalateChat(id);
-      if (updatedChat) {
-        setIsEscalated(true);
-      }
-    } catch (error) {
-      console.error("Error escalating chat:", error);
-    }
-  };
-
-  if (isLoading) {
-    return <p>Loading chat...</p>;
+  if (!loggedIn) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Card className="w-96">
+          <CardHeader>
+            <CardTitle>Unauthenticated user</CardTitle>
+            <CardDescription>
+              Seems you have not login your account on this device, please login
+              first
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href={`/sign-in`} className="w-full">
+              <Button className="w-full">
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Button>{" "}
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    // <ChatLayout
-    //   chats={chats}
-    //   currentChatId={currentChatId}
-    //   setCurrentChatId={() => {}}
-    //   isSidebarOpen={false}
-    //   setIsSidebarOpen={() => {}}
-    // >
     <>
-      <ChatMessages
-        messages={messages}
-        isEscalated={isEscalated}
-        isThinking={isThinking}
-        lastMessageRef={lastMessageRef}
-        handleOptionSelect={handleOptionSelect}
-      />
-      <ChatInput
-        input={input}
-        setInput={setInput}
-        handleSend={handleSend}
-        isThinking={isThinking}
-        isEscalated={isEscalated}
-      />
-      <EscalateButton
-        handleEscalate={handleEscalate}
-        isDisabled={isEscalated}
-      />
-      {/* </ChatLayout> */}
+      <ChatIdPageCM />
     </>
   );
 };

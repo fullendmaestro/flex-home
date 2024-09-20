@@ -6,11 +6,14 @@ import { cookies } from "next/headers";
 
 import { revalidatePath } from "next/cache";
 import { parseStringify } from "../utils";
+import { sendMessageToGemini } from "./gemini.actions";
 
 const {
   APPWRITE_DATABASE_ID: DATABASE_ID,
   APPWRITE_USER_COLLECTION_ID: USER_COLLECTION_ID,
   APPWRITE_CHAT_COLLECTION_ID: CHAT_COLLECTION_ID,
+  APPWRITE_MESSAGE_COLLECTION_ID: MESSAGE_COLLECTION_ID,
+  APPWRITE_ESCALATED_COLLECTION_ID: ESCALATED_CHAT_COLLECTION_ID,
 } = process.env;
 
 export const getUserInfo = async ({ userId }: getUserInfoProps) => {
@@ -29,6 +32,20 @@ export const getUserInfo = async ({ userId }: getUserInfoProps) => {
   }
 };
 
+export const fetchUserName = async (userId: string) => {
+  try {
+    const { database } = await createAdminClient();
+    const userDocument = await database.getDocument(
+      DATABASE_ID!,
+      USER_COLLECTION_ID!,
+      userId
+    );
+    return userDocument.name;
+  } catch (error) {
+    console.error("Error fetching user name:", error);
+    throw error;
+  }
+};
 export const signIn = async ({ email, password }: SignInParams) => {
   try {
     const { account } = await createAdminClient();
@@ -122,7 +139,21 @@ export const createChat = async ({ title, isEscalated }: createChatProps) => {
     const loggedInUser = await getLoggedInUser();
     if (!loggedInUser) throw new Error("Unauthorized access");
 
+    console.log("DATABASE_ID:", DATABASE_ID);
+    console.log("CHAT_COLLECTION_ID:", CHAT_COLLECTION_ID);
+
     const { database } = await createAdminClient();
+
+    // Ensure the userId is a valid reference to the user collection
+    const userDocument = await database.listDocuments(
+      DATABASE_ID!,
+      USER_COLLECTION_ID!,
+      [Query.equal("userId", [loggedInUser.userId])]
+    );
+
+    if (userDocument.total === 0) {
+      throw new Error("User not found in the user collection");
+    }
 
     const newChat = await database.createDocument(
       DATABASE_ID!,
@@ -133,16 +164,14 @@ export const createChat = async ({ title, isEscalated }: createChatProps) => {
         isEscalated,
         createdAt: new Date().toISOString(),
         userId: loggedInUser.userId, // Set userId for ownership
-      },
-      // Define the permissions for the resource (only the owner can read and write)
-      [
-        `user:${loggedInUser.userId}`, // Set owner read/write permissions
-      ]
+      }
     );
 
+    console.log("Chat created successfully:", newChat);
     return parseStringify(newChat);
   } catch (error) {
     console.error("Error creating chat:", error);
+    throw error;
   }
 };
 
@@ -151,7 +180,12 @@ export const fetchChatsList = async () => {
     const loggedInUser = await getLoggedInUser();
     if (!loggedInUser) throw new Error("Unauthorized access");
 
+    console.log("Logged in user:", loggedInUser);
+
     const { database } = await createAdminClient();
+
+    console.log("DATABASE_ID:", DATABASE_ID);
+    console.log("CHAT_COLLECTION_ID:", CHAT_COLLECTION_ID);
 
     const response = await database.listDocuments(
       DATABASE_ID!,
@@ -159,12 +193,13 @@ export const fetchChatsList = async () => {
       [Query.equal("userId", [loggedInUser.userId])] // Fetch only the user's chats
     );
 
+    console.log("Fetched chats response:", response);
+
     return parseStringify(response.documents);
   } catch (error) {
     console.error("Error fetching chats list:", error);
   }
 };
-
 export const fetchChatById = async (chatId: string) => {
   try {
     const loggedInUser = await getLoggedInUser();
@@ -259,5 +294,86 @@ export const escalateChat = async (chatId: string) => {
     return parseStringify(updatedChat);
   } catch (error) {
     console.error("Error escalating chat:", error);
+  }
+};
+
+export const handleSendMessage = async ({
+  chatId,
+  message,
+}: {
+  chatId: string;
+  message: string;
+}) => {
+  try {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser) throw new Error("Unauthorized access");
+
+    const senderId = loggedInUser.userId;
+
+    const { database } = await createAdminClient();
+
+    // Fetch the current chat
+    const chat = await database.getDocument(
+      DATABASE_ID!,
+      CHAT_COLLECTION_ID!,
+      chatId
+    );
+
+    // Check if the user is authorized to send a message to this chat
+    if (chat.userId !== loggedInUser.userId) {
+      throw new Error("Unauthorized to send message");
+    }
+
+    // Store the user message in the Messages collection
+    const userMessage = await database.createDocument(
+      DATABASE_ID!,
+      MESSAGE_COLLECTION_ID!,
+      ID.unique(),
+      {
+        chatId,
+        message,
+        senderId,
+        timestamp: new Date().toISOString(),
+      }
+    );
+
+    // Send the message to Gemini and get the response
+    const geminiResponse = await sendMessageToGemini(chatId, message, senderId);
+
+    // Store the Gemini response in the AI Responses collection
+    const aiResponse = await database.createDocument(
+      DATABASE_ID!,
+      MESSAGE_COLLECTION_ID!,
+      ID.unique(),
+      {
+        messageId: userMessage.$id,
+        response: geminiResponse,
+        timestamp: new Date().toISOString(),
+      }
+    );
+
+    // Append new messages to the chat
+    const updatedMessages = [
+      ...chat.messages,
+      { message, senderId, timestamp: new Date().toISOString() },
+      {
+        message: geminiResponse,
+        senderId: "gemini",
+        timestamp: new Date().toISOString(),
+      },
+    ];
+
+    // Update the chat with the new messages
+    const updatedChat = await database.updateDocument(
+      DATABASE_ID!,
+      CHAT_COLLECTION_ID!,
+      chatId,
+      { messages: updatedMessages }
+    );
+
+    return parseStringify(updatedChat);
+  } catch (error) {
+    console.error("Error handling send message:", error);
+    throw error;
   }
 };

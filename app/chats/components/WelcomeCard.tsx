@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,14 +10,33 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { MessageSquare } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { createChat } from "@/lib/actions/user.actions";
+
 // import { useRouter } from "next/navigation";
 
 const WelcomeCard = () => {
-  // const router = useRouter();
-  const startNewChat = () => {
-    // Navigate to a new chat with a unique ID
-    // const newChatId = Date.now(); // Example unique ID
-    // router.push(`/chats/${newChatId}`);
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleStartNewChat = async () => {
+    setIsLoading(true);
+    try {
+      // Create a new chat
+      const newChat = await createChat({
+        title: "New Chat",
+        isEscalated: false,
+      });
+
+      if (newChat) {
+        // Navigate to the new chat with its unique ID
+        router.push(`/chats/${newChat.$id}`);
+      } else {
+        console.error("Failed to create a new chat");
+      }
+    } catch (error) {
+      console.error("Error starting new chat:", error);
+    }
   };
   return (
     <>
@@ -28,7 +48,11 @@ const WelcomeCard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={startNewChat} className="w-full">
+          <Button
+            onClick={handleStartNewChat}
+            className="w-full"
+            disabled={isLoading}
+          >
             <MessageSquare className="mr-2 h-4 w-4" />
             Start New Chat
           </Button>

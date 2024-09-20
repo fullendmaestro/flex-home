@@ -217,7 +217,9 @@ export default function Layout({
     <div className="min-h-screen bg-background text-foreground">
       <header className="bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 py-4 md:py-6 flex justify-between items-center">
-          <h1 className="text-xl md:text-2xl font-bold"><Link href="/home">Flex Home</Link></h1>
+          <h1 className="text-xl md:text-2xl font-bold">
+            <Link href="/home">Flex Home</Link>
+          </h1>
           <nav className="hidden md:flex items-center space-x-4">
             <ul className="flex space-x-4">
               <li>
@@ -238,11 +240,11 @@ export default function Layout({
             </ul>
             <Link href="/chats">
               <Button variant="secondary" size="sm">
-              <MessageCircle className="w-4 h-4 mr-0.3" />
+                <MessageCircle className="w-4 h-4 mr-0.3" />
                 ChatBot
               </Button>
             </Link>
-            <Link href="/login">
+            <Link href="/sign-in">
               <Button variant="ghost" size="sm">
                 <LogIn className="w-4 h-4 mr-2" />
                 Login
@@ -273,12 +275,12 @@ export default function Layout({
                   Pricing
                 </a>
                 <Link href="/chats">
-              <Button variant="secondary" className="w-full justify-start">
-              <MessageCircle className="w-4 h-4 mr-0.3" />
-                BotChat
-              </Button>
-            </Link>
-                <Link href="/login">
+                  <Button variant="secondary" className="w-full justify-start">
+                    <MessageCircle className="w-4 h-4 mr-0.3" />
+                    BotChat
+                  </Button>
+                </Link>
+                <Link href="/sign-in">
                   <Button variant="ghost" className="w-full justify-start">
                     <LogIn className="w-4 h-4 mr-2" />
                     Login
@@ -301,7 +303,10 @@ export default function Layout({
       <footer className="bg-primary text-primary-foreground py-6 md:py-8">
         <div className="container mx-auto px-4 text-center">
           <p>&copy; 2023 Flex Home. All rights reserved. </p>
-          <p><Link href="/privacy">Privacy</Link> | <Link href="/terms">Terms</Link></p>
+          <p>
+            <Link href="/privacy">Privacy</Link> |{" "}
+            <Link href="/terms">Terms</Link>
+          </p>
         </div>
       </footer>
 

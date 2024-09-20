@@ -7,6 +7,7 @@ import { fetchChatsList } from "@/lib/actions/user.actions";
 import { useEffect, useState } from "react";
 
 import Profile from "./Profile";
+import Link from "next/link";
 
 type ChatSidebarProps = {
   isSidebarOpen: boolean;
@@ -24,8 +25,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetchChatsList();
-      setChats([]);
+      try {
+        const res = await fetchChatsList();
+        setChats(res); // Store fetched data in state
+        console.log("Chats fetched successfully:", res);
+      } catch (error) {
+        console.error("Error fetching chats:", error); // Log any errors
+      }
     };
 
     fetchData();
@@ -61,8 +67,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   setIsSidebarOpen(false);
                 }}
               >
-                {chat.title}
-                {chat.isEscalated && <Headphones className="ml-2 h-4 w-4" />}
+                <Link href={chat.$id}>
+                  {chat.title}
+                  {chat.isEscalated && <Headphones className="ml-2 h-4 w-4" />}
+                </Link>
               </Button>
             ))}
           </ScrollArea>
